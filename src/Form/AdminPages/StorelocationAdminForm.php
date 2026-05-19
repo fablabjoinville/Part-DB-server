@@ -27,6 +27,8 @@ use App\Entity\Parts\MeasurementUnit;
 use App\Form\Type\StructuralEntityType;
 use App\Form\Type\UserSelectType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 class StorelocationAdminForm extends BaseEntityAdminForm
@@ -73,6 +75,30 @@ class StorelocationAdminForm extends BaseEntityAdminForm
         $builder->add('part_owner_must_match', CheckboxType::class, [
             'required' => false,
             'label' => 'storelocation.part_owner_must_match.label',
+            'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
+        ]);
+
+        $builder->add('wled_mqtt_topic', TextType::class, [
+            'required' => false,
+            'label' => 'storelocation.wled_mqtt_topic.label',
+            'help' => 'storelocation.wled_mqtt_topic.help',
+            'attr' => ['placeholder' => 'wled/cabinet_a'],
+            'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
+        ]);
+
+        $builder->add('wled_led_start', IntegerType::class, [
+            'required' => false,
+            'label' => 'storelocation.wled_led_start.label',
+            'help' => 'storelocation.wled_led_start.help',
+            'attr' => ['placeholder' => '0', 'min' => 0],
+            'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
+        ]);
+
+        $builder->add('wled_led_end', IntegerType::class, [
+            'required' => false,
+            'label' => 'storelocation.wled_led_end.label',
+            'help' => 'storelocation.wled_led_end.help',
+            'attr' => ['placeholder' => '23', 'min' => 0],
             'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
         ]);
     }

@@ -174,6 +174,27 @@ class StorageLocation extends AbstractPartsContainingDBElement
     #[Groups(['location:read'])]
     protected ?\DateTimeImmutable $lastModified = null;
 
+    /**
+     * @var string|null MQTT topic of the WLED controller managing this cabinet/shelf (set on root/parent locations).
+     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['location:read', 'location:write'])]
+    protected ?string $wled_mqtt_topic = null;
+
+    /**
+     * @var int|null First LED index in the WLED strip assigned to this row/drawer.
+     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Groups(['location:read', 'location:write'])]
+    protected ?int $wled_led_start = null;
+
+    /**
+     * @var int|null Last LED index (inclusive) in the WLED strip assigned to this row/drawer.
+     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Groups(['location:read', 'location:write'])]
+    protected ?int $wled_led_end = null;
+
 
     /********************************************************************************
      *
@@ -270,8 +291,55 @@ class StorageLocation extends AbstractPartsContainingDBElement
         return $this;
     }
 
+    public function getWledMqttTopic(): ?string
+    {
+        return $this->wled_mqtt_topic;
+    }
 
+    public function setWledMqttTopic(?string $wled_mqtt_topic): self
+    {
+        $this->wled_mqtt_topic = $wled_mqtt_topic;
+        return $this;
+    }
 
+    public function getWledLedStart(): ?int
+    {
+        return $this->wled_led_start;
+    }
+
+    public function setWledLedStart(?int $wled_led_start): self
+    {
+        $this->wled_led_start = $wled_led_start;
+        return $this;
+    }
+
+    public function getWledLedEnd(): ?int
+    {
+        return $this->wled_led_end;
+    }
+
+    public function setWledLedEnd(?int $wled_led_end): self
+    {
+        $this->wled_led_end = $wled_led_end;
+        return $this;
+    }
+
+    /**
+     * Walks up the ancestor tree to find the nearest WLED MQTT topic.
+     * Returns null if no ancestor (or self) has a topic configured.
+     */
+    public function resolveWledMqttTopic(): ?string
+    {
+        $current = $this;
+        while ($current !== null) {
+            if ($current->wled_mqtt_topic !== null && $current->wled_mqtt_topic !== '') {
+                return $current->wled_mqtt_topic;
+            }
+            /** @var StorageLocation|null $current */
+            $current = $current->getParent();
+        }
+        return null;
+    }
 
     /********************************************************************************
      *

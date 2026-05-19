@@ -8436,6 +8436,66 @@ Element 1 -&gt; Element 1.2</target>
         <target>[Part_lot] owner must match [storage_location] owner</target>
       </segment>
     </unit>
+    <unit id="wled001" name="storelocation.wled.tab">
+      <segment state="translated">
+        <source>storelocation.wled.tab</source>
+        <target>WLED / Electrodrawer</target>
+      </segment>
+    </unit>
+    <unit id="wled002" name="storelocation.wled.description">
+      <segment state="translated">
+        <source>storelocation.wled.description</source>
+        <target>Configure WLED LED strip highlighting for this storage location. Set the MQTT topic on a cabinet/shelf (parent) and LED address ranges on individual rows/drawers (children).</target>
+      </segment>
+    </unit>
+    <unit id="wled003" name="storelocation.wled.controller_section">
+      <segment state="translated">
+        <source>storelocation.wled.controller_section</source>
+        <target>Controller (set on cabinet / shelf)</target>
+      </segment>
+    </unit>
+    <unit id="wled004" name="storelocation.wled.leds_section">
+      <segment state="translated">
+        <source>storelocation.wled.leds_section</source>
+        <target>LED Range (set on row / drawer)</target>
+      </segment>
+    </unit>
+    <unit id="wled005" name="storelocation.wled_mqtt_topic.label">
+      <segment state="translated">
+        <source>storelocation.wled_mqtt_topic.label</source>
+        <target>WLED MQTT Topic</target>
+      </segment>
+    </unit>
+    <unit id="wled006" name="storelocation.wled_mqtt_topic.help">
+      <segment state="translated">
+        <source>storelocation.wled_mqtt_topic.help</source>
+        <target>The MQTT topic of the WLED controller for this cabinet (e.g. wled/cabinet_a). Children will inherit this topic automatically.</target>
+      </segment>
+    </unit>
+    <unit id="wled007" name="storelocation.wled_led_start.label">
+      <segment state="translated">
+        <source>storelocation.wled_led_start.label</source>
+        <target>LED Start Index</target>
+      </segment>
+    </unit>
+    <unit id="wled008" name="storelocation.wled_led_start.help">
+      <segment state="translated">
+        <source>storelocation.wled_led_start.help</source>
+        <target>First LED index (0-based) assigned to this drawer on the strip.</target>
+      </segment>
+    </unit>
+    <unit id="wled009" name="storelocation.wled_led_end.label">
+      <segment state="translated">
+        <source>storelocation.wled_led_end.label</source>
+        <target>LED End Index</target>
+      </segment>
+    </unit>
+    <unit id="wled010" name="storelocation.wled_led_end.help">
+      <segment state="translated">
+        <source>storelocation.wled_led_end.help</source>
+        <target>Last LED index (inclusive) assigned to this drawer on the strip.</target>
+      </segment>
+    </unit>
     <unit id="eMHXpbV" name="part_lot.owner">
       <segment state="translated">
         <source>part_lot.owner</source>
