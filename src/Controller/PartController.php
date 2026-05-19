@@ -59,9 +59,12 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Form\FormInterface;
+use App\Message\WledHighlightMessage;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
@@ -81,6 +84,7 @@ final class PartController extends AbstractController
         private readonly EventCommentHelper $commentHelper,
         private readonly PartInfoSettings $partInfoSettings,
         private readonly IpnSuggestSettings $ipnSuggestSettings,
+        private readonly MessageBusInterface $messageBus,
     ) {
     }
 
@@ -101,6 +105,12 @@ final class PartController extends AbstractController
         ?string $timestamp = null
     ): Response {
         $this->denyAccessUnlessGranted('read', $part);
+
+        // Dispatch WLED highlight for each lot that has a fully-configured storage location.
+        // Skip during time-travel views (timestamp set) to avoid spurious flashes.
+        if ($timestamp === null) {
+            $this->dispatchWledHighlight($part);
+        }
 
         $timeTravel_timestamp = null;
         if (null !== $timestamp) {
@@ -155,6 +165,45 @@ final class PartController extends AbstractController
                 'add_lot_form' => $addLotForm,
             ]
         );
+    }
+
+    /**
+     * Manual re-trigger endpoint for the Highlight button on the part info page.
+     * Returns JSON so the button can give immediate feedback without a page reload.
+     */
+    #[Route(path: '/{id}/highlight', name: 'part_wled_highlight', methods: ['POST'])]
+    public function highlight(Part $part): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('read', $part);
+
+        $dispatched = $this->dispatchWledHighlight($part);
+
+        return new JsonResponse(['dispatched' => $dispatched]);
+    }
+
+    /**
+     * Dispatches a WledHighlightMessage for every lot of the given part that
+     * has a storage location with a fully-configured LED range.
+     * Returns the number of messages dispatched.
+     */
+    private function dispatchWledHighlight(Part $part): int
+    {
+        $count = 0;
+        foreach ($part->getPartLots() as $lot) {
+            $location = $lot->getStorageLocation();
+            if (!$location instanceof StorageLocation) {
+                continue;
+            }
+            if ($location->getWledLedStart() === null || $location->getWledLedEnd() === null) {
+                continue;
+            }
+            if ($location->resolveWledMqttTopic() === null) {
+                continue;
+            }
+            $this->messageBus->dispatch(new WledHighlightMessage($part->getID(), $location->getID()));
+            ++$count;
+        }
+        return $count;
     }
 
     #[Route(path: '/{id}/add_lot', name: 'part_lot_add', methods: ['POST'])]

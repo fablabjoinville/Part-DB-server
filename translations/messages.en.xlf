@@ -8496,6 +8496,12 @@ Element 1 -&gt; Element 1.2</target>
         <target>Last LED index (inclusive) assigned to this drawer on the strip.</target>
       </segment>
     </unit>
+    <unit id="wled011" name="part.wled.highlight_btn">
+      <segment state="translated">
+        <source>part.wled.highlight_btn</source>
+        <target>Highlight Location</target>
+      </segment>
+    </unit>
     <unit id="eMHXpbV" name="part_lot.owner">
       <segment state="translated">
         <source>part_lot.owner</source>

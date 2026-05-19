@@ -68,6 +68,59 @@
 
 {{ dropdown.profile_dropdown('part', part.id) }}
 
+{# WLED Highlight button — only shown when at least one lot has a configured LED range #}
+{% set has_wled = false %}
+{% for lot in part.partLots %}
+    {% if lot.storageLocation and lot.storageLocation.wledLedStart is not null and lot.storageLocation.wledLedEnd is not null %}
+        {% set has_wled = true %}
+    {% endif %}
+{% endfor %}
+{% if has_wled %}
+<form id="wled-highlight-form" class="mt-2"
+      action="{{ path('part_wled_highlight', {id: part.id}) }}"
+      method="post">
+    <input type="hidden" name="_token" value="{{ csrf_token('wled_highlight' ~ part.id) }}">
+    <button id="wled-highlight-btn" type="submit" class="btn btn-warning w-100">
+        <i class="fa-solid fa-lightbulb fa-fw"></i>
+        {% trans %}part.wled.highlight_btn{% endtrans %}
+    </button>
+</form>
+<script>
+(function () {
+    var form = document.getElementById('wled-highlight-form');
+    var btn  = document.getElementById('wled-highlight-btn');
+    if (!form || !btn) return;
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-fw"></i>';
+        fetch(form.action, {method: 'POST', body: new FormData(form)})
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+            .then(function (data) {
+                btn.classList.replace('btn-warning', data.dispatched > 0 ? 'btn-success' : 'btn-secondary');
+                btn.innerHTML = data.dispatched > 0
+                    ? '<i class="fa-solid fa-check fa-fw"></i>'
+                    : '<i class="fa-solid fa-ban fa-fw"></i>';
+                setTimeout(function () {
+                    btn.classList.replace(data.dispatched > 0 ? 'btn-success' : 'btn-secondary', 'btn-warning');
+                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> {{ 'part.wled.highlight_btn'|trans }}';
+                    btn.disabled = false;
+                }, 2000);
+            })
+            .catch(function () {
+                btn.classList.replace('btn-warning', 'btn-danger');
+                btn.innerHTML = '<i class="fa-solid fa-xmark fa-fw"></i>';
+                setTimeout(function () {
+                    btn.classList.replace('btn-danger', 'btn-warning');
+                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> {{ 'part.wled.highlight_btn'|trans }}';
+                    btn.disabled = false;
+                }, 2000);
+            });
+    });
+}());
+</script>
+{% endif %}
+
 <a class="btn btn-success mt-2" {% if not is_granted('@projects.edit') %}disabled{% endif %}
    href="{{ path('project_add_parts_no_id', {"parts": part.id, "_redirect":  uri_without_host(app.request)}) }}">
     <i class="fa-solid fa-magnifying-glass-plus fa-fw"></i>
