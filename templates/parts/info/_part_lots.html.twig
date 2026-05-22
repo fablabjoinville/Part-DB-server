@@ -118,6 +118,15 @@
                             {% if lot.comment is not empty %}
                                 <span class="text-muted dropdown-item-text" ><i class="fas fa-sticky-note fa-fw"></i> <b>{% trans %}part_lot.edit.comment{% endtrans %}:</b> {{ lot.comment }}</span>
                             {% endif %}
+                            {% if lot.storageLocation and (lot.storageLocation.wledLedStart is not null or lot.storageLocation.name matches '/^[A-Za-z]+\\d+$/') %}
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item wled-lot-highlight-btn"
+                                        data-url="{{ path('part_lot_wled_highlight', {id: part.id, lotId: lot.id}) }}"
+                                        data-label="{{ 'part.wled.highlight_btn'|trans }}">
+                                    <i class="fa-solid fa-lightbulb fa-fw text-warning"></i>
+                                    {% trans %}part.wled.highlight_btn{% endtrans %}
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </td>
@@ -127,6 +136,37 @@
 
     </table>
 </div>
+
+<script>
+(function () {
+    document.querySelectorAll('.wled-lot-highlight-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var url = btn.dataset.url;
+            var label = btn.dataset.label;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-fw"></i>';
+            fetch(url, {method: 'POST'})
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+                .then(function (data) {
+                    btn.innerHTML = data.dispatched > 0
+                        ? '<i class="fa-solid fa-check fa-fw text-success"></i> ' + label
+                        : '<i class="fa-solid fa-ban fa-fw"></i> ' + label;
+                    setTimeout(function () {
+                        btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw text-warning"></i> ' + label;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch(function () {
+                    btn.innerHTML = '<i class="fa-solid fa-xmark fa-fw text-danger"></i> ' + label;
+                    setTimeout(function () {
+                        btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw text-warning"></i> ' + label;
+                        btn.disabled = false;
+                    }, 2000);
+                });
+        });
+    });
+}());
+</script>
 
 {% if add_lot_form is not null %}
 <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#add-lot-modal">

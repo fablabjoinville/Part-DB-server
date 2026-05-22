@@ -78,11 +78,11 @@ class StorelocationAdminForm extends BaseEntityAdminForm
             'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
         ]);
 
-        $builder->add('wled_mqtt_topic', TextType::class, [
+        $builder->add('wled_host', TextType::class, [
             'required' => false,
-            'label' => 'storelocation.wled_mqtt_topic.label',
-            'help' => 'storelocation.wled_mqtt_topic.help',
-            'attr' => ['placeholder' => 'wled/cabinet_a'],
+            'label' => 'storelocation.wled_host.label',
+            'help' => 'storelocation.wled_host.help',
+            'attr' => ['placeholder' => '192.168.1.x'],
             'disabled' => !$this->security->isGranted($is_new ? 'create' : 'edit', $entity),
         ]);
 

@@ -8445,31 +8445,31 @@ Element 1 -&gt; Element 1.2</target>
     <unit id="wled002" name="storelocation.wled.description">
       <segment state="translated">
         <source>storelocation.wled.description</source>
-        <target>Configure WLED LED strip highlighting for this storage location. Set the MQTT topic on a cabinet/shelf (parent) and LED address ranges on individual rows/drawers (children).</target>
+        <target>Configure WLED LED highlighting for this storage location. Storage locations named like "E35" (letter + number) are highlighted automatically — no configuration needed. Set the Controller Host on a parent location to override which WLED device to use.</target>
       </segment>
     </unit>
     <unit id="wled003" name="storelocation.wled.controller_section">
       <segment state="translated">
         <source>storelocation.wled.controller_section</source>
-        <target>Controller (set on cabinet / shelf)</target>
+        <target>Controller (optional — inherits from parent or system default)</target>
       </segment>
     </unit>
     <unit id="wled004" name="storelocation.wled.leds_section">
       <segment state="translated">
         <source>storelocation.wled.leds_section</source>
-        <target>LED Range (set on row / drawer)</target>
+        <target>Manual LED Override (optional — auto-detected from name if left empty)</target>
       </segment>
     </unit>
-    <unit id="wled005" name="storelocation.wled_mqtt_topic.label">
+    <unit id="wled005" name="storelocation.wled_host.label">
       <segment state="translated">
-        <source>storelocation.wled_mqtt_topic.label</source>
-        <target>WLED MQTT Topic</target>
+        <source>storelocation.wled_host.label</source>
+        <target>Controller Host</target>
       </segment>
     </unit>
-    <unit id="wled006" name="storelocation.wled_mqtt_topic.help">
+    <unit id="wled006" name="storelocation.wled_host.help">
       <segment state="translated">
-        <source>storelocation.wled_mqtt_topic.help</source>
-        <target>The MQTT topic of the WLED controller for this cabinet (e.g. wled/cabinet_a). Children will inherit this topic automatically.</target>
+        <source>storelocation.wled_host.help</source>
+        <target>IP address or hostname of the WLED controller for this cabinet (e.g. 192.168.1.37). Children will inherit this automatically. Leave empty to use the system default.</target>
       </segment>
     </unit>
     <unit id="wled007" name="storelocation.wled_led_start.label">
@@ -12159,6 +12159,72 @@ Please note that this system is currently experimental, and the synonyms defined
       <segment state="translated">
         <source>settings.misc.ipn_suggest.globalPrefix.help</source>
         <target>If enabled, an option for to generate IPN with this global prefix, shared across parts in all categories.</target>
+      </segment>
+    </unit>
+    <unit id="wled100" name="settings.misc.wled">
+      <segment state="translated">
+        <source>settings.misc.wled</source>
+        <target>WLED / Electrodrawer</target>
+      </segment>
+    </unit>
+    <unit id="wled101" name="settings.misc.wled.color">
+      <segment state="translated">
+        <source>settings.misc.wled.color</source>
+        <target>Highlight color</target>
+      </segment>
+    </unit>
+    <unit id="wled102" name="settings.misc.wled.color.help">
+      <segment state="translated">
+        <source>settings.misc.wled.color.help</source>
+        <target>Color used to highlight the LED strip when a drawer is selected.</target>
+      </segment>
+    </unit>
+    <unit id="wled103" name="settings.misc.wled.duration">
+      <segment state="translated">
+        <source>settings.misc.wled.duration</source>
+        <target>Highlight duration (seconds)</target>
+      </segment>
+    </unit>
+    <unit id="wled104" name="settings.misc.wled.duration.help">
+      <segment state="translated">
+        <source>settings.misc.wled.duration.help</source>
+        <target>How long the drawer blinks before turning off automatically (1–255 seconds, default 30).</target>
+      </segment>
+    </unit>
+    <unit id="wled105" name="settings.misc.wled.effect">
+      <segment state="translated">
+        <source>settings.misc.wled.effect</source>
+        <target>Effect ID</target>
+      </segment>
+    </unit>
+    <unit id="wled106" name="settings.misc.wled.effect.help">
+      <segment state="translated">
+        <source>settings.misc.wled.effect.help</source>
+        <target>WLED effect index to use during highlighting (0 = solid, 65 = Fireworks, etc.). See the WLED effects list for IDs.</target>
+      </segment>
+    </unit>
+    <unit id="wled107" name="settings.misc.wled.host">
+      <segment state="translated">
+        <source>settings.misc.wled.host</source>
+        <target>Default WLED Host</target>
+      </segment>
+    </unit>
+    <unit id="wled108" name="settings.misc.wled.host.help">
+      <segment state="translated">
+        <source>settings.misc.wled.host.help</source>
+        <target>IP address or hostname of the WLED controller used when no host is configured on the storage location (e.g. 192.168.1.37).</target>
+      </segment>
+    </unit>
+    <unit id="wled109" name="settings.misc.wled.rowConfig">
+      <segment state="translated">
+        <source>settings.misc.wled.rowConfig</source>
+        <target>Row Configuration (JSON)</target>
+      </segment>
+    </unit>
+    <unit id="wled110" name="settings.misc.wled.rowConfig.help">
+      <segment state="translated">
+        <source>settings.misc.wled.rowConfig.help</source>
+        <target>Maps row letters to WLED 2D matrix parameters. Each key is a row letter (e.g. "E"), with fields: y (row index), perDrawer (LED columns per drawer), host (optional override IP). Example: {"E":{"y":1,"perDrawer":1}}</target>
       </segment>
     </unit>
     <unit id="MxKRRx_" name="datatable.datatable.lengthMenu">

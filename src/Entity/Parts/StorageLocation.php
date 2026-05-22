@@ -175,11 +175,11 @@ class StorageLocation extends AbstractPartsContainingDBElement
     protected ?\DateTimeImmutable $lastModified = null;
 
     /**
-     * @var string|null MQTT topic of the WLED controller managing this cabinet/shelf (set on root/parent locations).
+     * @var string|null IP address or hostname of the WLED controller managing this cabinet/shelf (set on root/parent locations).
      */
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['location:read', 'location:write'])]
-    protected ?string $wled_mqtt_topic = null;
+    protected ?string $wled_host = null;
 
     /**
      * @var int|null First LED index in the WLED strip assigned to this row/drawer.
@@ -291,14 +291,14 @@ class StorageLocation extends AbstractPartsContainingDBElement
         return $this;
     }
 
-    public function getWledMqttTopic(): ?string
+    public function getWledHost(): ?string
     {
-        return $this->wled_mqtt_topic;
+        return $this->wled_host;
     }
 
-    public function setWledMqttTopic(?string $wled_mqtt_topic): self
+    public function setWledHost(?string $wled_host): self
     {
-        $this->wled_mqtt_topic = $wled_mqtt_topic;
+        $this->wled_host = $wled_host;
         return $this;
     }
 
@@ -325,15 +325,15 @@ class StorageLocation extends AbstractPartsContainingDBElement
     }
 
     /**
-     * Walks up the ancestor tree to find the nearest WLED MQTT topic.
-     * Returns null if no ancestor (or self) has a topic configured.
+     * Walks up the ancestor tree to find the nearest WLED controller host.
+     * Returns null if no ancestor (or self) has a host configured.
      */
-    public function resolveWledMqttTopic(): ?string
+    public function resolveWledHost(): ?string
     {
         $current = $this;
         while ($current !== null) {
-            if ($current->wled_mqtt_topic !== null && $current->wled_mqtt_topic !== '') {
-                return $current->wled_mqtt_topic;
+            if ($current->wled_host !== null && $current->wled_host !== '') {
+                return $current->wled_host;
             }
             /** @var StorageLocation|null $current */
             $current = $current->getParent();

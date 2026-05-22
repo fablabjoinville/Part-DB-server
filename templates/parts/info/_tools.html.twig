@@ -71,7 +71,7 @@
 {# WLED Highlight button — only shown when at least one lot has a configured LED range #}
 {% set has_wled = false %}
 {% for lot in part.partLots %}
-    {% if lot.storageLocation and lot.storageLocation.wledLedStart is not null and lot.storageLocation.wledLedEnd is not null %}
+    {% if lot.storageLocation and (lot.storageLocation.wledLedStart is not null or lot.storageLocation.name matches '/^[A-Za-z]+\\d+$/') %}
         {% set has_wled = true %}
     {% endif %}
 {% endfor %}
@@ -80,9 +80,10 @@
       action="{{ path('part_wled_highlight', {id: part.id}) }}"
       method="post">
     <input type="hidden" name="_token" value="{{ csrf_token('wled_highlight' ~ part.id) }}">
-    <button id="wled-highlight-btn" type="submit" class="btn btn-warning w-100">
+    <button id="wled-highlight-btn" type="submit" class="btn btn-warning"
+            data-label="{{ 'part.wled.highlight_btn'|trans }}">
         <i class="fa-solid fa-lightbulb fa-fw"></i>
-        {% trans %}part.wled.highlight_btn{% endtrans %}
+        {{ 'part.wled.highlight_btn'|trans }}
     </button>
 </form>
 <script>
@@ -103,7 +104,7 @@
                     : '<i class="fa-solid fa-ban fa-fw"></i>';
                 setTimeout(function () {
                     btn.classList.replace(data.dispatched > 0 ? 'btn-success' : 'btn-secondary', 'btn-warning');
-                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> {{ 'part.wled.highlight_btn'|trans }}';
+                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> ' + btn.dataset.label;
                     btn.disabled = false;
                 }, 2000);
             })
@@ -112,7 +113,7 @@
                 btn.innerHTML = '<i class="fa-solid fa-xmark fa-fw"></i>';
                 setTimeout(function () {
                     btn.classList.replace('btn-danger', 'btn-warning');
-                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> {{ 'part.wled.highlight_btn'|trans }}';
+                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> ' + btn.dataset.label;
                     btn.disabled = false;
                 }, 2000);
             });

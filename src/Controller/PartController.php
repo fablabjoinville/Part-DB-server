@@ -182,6 +182,29 @@ final class PartController extends AbstractController
     }
 
     /**
+     * Per-lot highlight endpoint — dispatches a WledHighlightMessage for a single lot.
+     */
+    #[Route(path: '/{id}/highlight_lot/{lotId}', name: 'part_lot_wled_highlight', methods: ['POST'])]
+    public function highlightLot(Part $part, int $lotId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('read', $part);
+
+        $lot = $this->em->find(PartLot::class, $lotId);
+        if (!$lot instanceof PartLot || $lot->getPart()?->getID() !== $part->getID()) {
+            return new JsonResponse(['dispatched' => 0]);
+        }
+
+        $location = $lot->getStorageLocation();
+        if (!$location instanceof StorageLocation || !$this->isWledHighlightable($location)) {
+            return new JsonResponse(['dispatched' => 0]);
+        }
+
+        $this->messageBus->dispatch(new WledHighlightMessage($part->getID(), $location->getID()));
+
+        return new JsonResponse(['dispatched' => 1]);
+    }
+
+    /**
      * Dispatches a WledHighlightMessage for every lot of the given part that
      * has a storage location with a fully-configured LED range.
      * Returns the number of messages dispatched.
@@ -191,19 +214,21 @@ final class PartController extends AbstractController
         $count = 0;
         foreach ($part->getPartLots() as $lot) {
             $location = $lot->getStorageLocation();
-            if (!$location instanceof StorageLocation) {
-                continue;
-            }
-            if ($location->getWledLedStart() === null || $location->getWledLedEnd() === null) {
-                continue;
-            }
-            if ($location->resolveWledMqttTopic() === null) {
+            if (!$location instanceof StorageLocation || !$this->isWledHighlightable($location)) {
                 continue;
             }
             $this->messageBus->dispatch(new WledHighlightMessage($part->getID(), $location->getID()));
             ++$count;
         }
         return $count;
+    }
+
+    private function isWledHighlightable(StorageLocation $location): bool
+    {
+        if ($location->getWledLedStart() !== null) {
+            return true;
+        }
+        return (bool) preg_match('/^[A-Za-z]+\d+$/i', trim($location->getName() ?? ''));
     }
 
     #[Route(path: '/{id}/add_lot', name: 'part_lot_add', methods: ['POST'])]

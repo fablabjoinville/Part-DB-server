@@ -6,12 +6,14 @@ namespace App\MessageHandler;
 
 use App\Entity\Parts\StorageLocation;
 use App\Message\WledHighlightMessage;
+use App\Message\WledRestoreMessage;
+use App\Settings\MiscSettings\WledSettings;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpMqtt\Client\ConnectionSettings;
-use PhpMqtt\Client\MqttClient;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsMessageHandler]
 final class WledHighlightHandler
@@ -19,16 +21,9 @@ final class WledHighlightHandler
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
-        #[Autowire(env: 'MQTT_HOST')]
-        private readonly string $mqttHost,
-        #[Autowire(env: 'MQTT_PORT')]
-        private readonly string $mqttPort,
-        #[Autowire(env: 'WLED_HIGHLIGHT_DURATION_S')]
-        private readonly string $highlightDurationS,
-        #[Autowire(env: 'WLED_HIGHLIGHT_COLOR')]
-        private readonly string $highlightColor,
-        #[Autowire(env: 'WLED_HIGHLIGHT_EFFECT')]
-        private readonly string $highlightEffect,
+        private readonly WledSettings $wledSettings,
+        private readonly HttpClientInterface $httpClient,
+        private readonly MessageBusInterface $messageBus,
     ) {}
 
     public function __invoke(WledHighlightMessage $message): void
@@ -38,72 +33,114 @@ final class WledHighlightHandler
             return;
         }
 
-        $ledStart = $location->getWledLedStart();
-        $ledEnd   = $location->getWledLedEnd();
-
-        if ($ledStart === null || $ledEnd === null || $ledEnd < $ledStart) {
-            // Location has no LED range configured — nothing to do.
+        [$startX, $stopX, $startY, $stopY, $rowHost] = $this->resolveSegmentCoords($location);
+        if ($startX === null) {
+            $this->logger->warning('Cannot resolve WLED segment for location "{name}" (id={id})', [
+                'name' => $location->getName(),
+                'id'   => $location->getID(),
+            ]);
             return;
         }
 
-        $mqttTopic = $location->resolveWledMqttTopic();
-        if ($mqttTopic === null) {
+        // Host priority: per-row config override > entity tree > system default
+        $host = $rowHost ?? $location->resolveWledHost() ?? $this->wledSettings->wledHost;
+        if (!$host) {
             return;
         }
 
-        $payload = $this->buildPayload($ledStart, $ledEnd);
+        [$r, $g, $b] = $this->hexToRgb($this->wledSettings->highlightColor);
+        $durationS = max(1, (int) $this->wledSettings->highlightDurationS);
+
+        $payload = [
+            'seg' => [[
+                'id'     => 1,
+                'start'  => $startX,
+                'stop'   => $stopX,
+                'startY' => $startY,
+                'stopY'  => $stopY,
+                'col'    => [[$r, $g, $b], [0, 0, 0]],
+                'fx'     => $this->wledSettings->highlightEffect,
+                'sx'     => 60,
+                'on'     => true,
+                'bri'    => 255,
+            ]],
+        ];
 
         try {
-            $settings = (new ConnectionSettings())
-                ->setConnectTimeout(3)
-                ->setSocketTimeout(3)
-                ->setKeepAliveInterval(0);
-
-            $client = new MqttClient($this->mqttHost, (int) $this->mqttPort, 'partdb-wled-' . uniqid());
-            $client->connect($settings, cleanSession: true);
-            $client->publish($mqttTopic . '/api', json_encode($payload), qualityOfService: 0, retain: false);
-            $client->disconnect();
-        } catch (\Throwable $e) {
-            // Fire-and-forget: log but never crash the worker over MQTT errors.
-            $this->logger->warning('WLED MQTT publish failed for location {id}: {msg}', [
-                'id'  => $message->storageLocationId,
-                'msg' => $e->getMessage(),
+            $response = $this->httpClient->request('POST', "http://{$host}/json/state", [
+                'json'    => $payload,
+                'timeout' => 5,
             ]);
+            $data = $response->toArray();
+            if (!($data['success'] ?? false)) {
+                $this->logger->error('WLED API returned non-success for location "{name}"', [
+                    'name'     => $location->getName(),
+                    'response' => $data,
+                ]);
+                return;
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('WLED HTTP request failed for location "{name}": {msg}', [
+                'name' => $location->getName(),
+                'msg'  => $e->getMessage(),
+            ]);
+            return;
         }
+
+        // Schedule restore (turn segment 1 off) after the highlight duration
+        $this->messageBus->dispatch(
+            new WledRestoreMessage($host),
+            [new DelayStamp($durationS * 1000)]
+        );
     }
 
     /**
-     * Builds the WLED JSON API payload.
+     * Resolves [startX, stopX, startY, stopY, host|null] for segment 1 (ELECTRODRAWER).
+     * Returns [null, null, null, null, null] if coordinates cannot be determined.
      *
-     * Uses a temporary segment on the target LED range with a blink effect and
-     * WLED's native Nightlight timer to fade out after the configured duration.
-     * No "turn off" command is ever sent from PHP — the controller handles it.
+     * Priority:
+     * 1. Manual override: wled_led_start / wled_led_end (host from entity tree / system default).
+     * 2. Name-based auto-detection: name matches "[Letters][Digits]" (e.g. "E35").
      */
-    private function buildPayload(int $ledStart, int $ledEnd): array
+    private function resolveSegmentCoords(StorageLocation $location): array
     {
-        $color    = ltrim($this->highlightColor, '#');
-        $duration = max(1, (int) $this->highlightDurationS);
-        $effect   = (int) $this->highlightEffect;
+        $ledStart = $location->getWledLedStart();
+        $ledEnd   = $location->getWledLedEnd();
+        if ($ledStart !== null && $ledEnd !== null && $ledEnd >= $ledStart) {
+            return [$ledStart, $ledEnd + 1, 0, 1, null];
+        }
 
+        $name = trim($location->getName() ?? '');
+        if (!preg_match('/^([A-Za-z]+)(\d+)$/i', $name, $m)) {
+            return [null, null, null, null, null];
+        }
+
+        $rowLetter = strtoupper($m[1]);
+        $colNumber = (int) $m[2];
+
+        $rowConfig = json_decode($this->wledSettings->rowConfig, true) ?? [];
+        if (!isset($rowConfig[$rowLetter])) {
+            $this->logger->warning('Row "{row}" not found in WLED rowConfig', ['row' => $rowLetter]);
+            return [null, null, null, null, null];
+        }
+
+        $cfg       = $rowConfig[$rowLetter];
+        $y         = (int) $cfg['y'];
+        $perDrawer = max(1, (int) ($cfg['perDrawer'] ?? 1));
+        $startX    = ($colNumber - 1) * $perDrawer;  // colNumber is 1-based (C01 = first column)
+        $stopX     = $startX + $perDrawer;
+        $rowHost   = ($cfg['host'] ?? '') !== '' ? $cfg['host'] : null;
+
+        return [$startX, $stopX, $y, $y + 1, $rowHost];
+    }
+
+    private function hexToRgb(string $hex): array
+    {
+        $hex = ltrim($hex, '#');
         return [
-            'seg' => [
-                [
-                    'id'    => 0,
-                    'start' => $ledStart,
-                    'stop'  => $ledEnd + 1, // WLED stop is exclusive
-                    'on'    => true,
-                    'bri'   => 255,
-                    'col'   => [[$color]],
-                    'fx'    => $effect,
-                    'sx'    => 180,
-                    'nl'    => [
-                        'on'   => true,
-                        'dur'  => $duration,
-                        'mode' => 1,    // fade to target brightness
-                        'tbri' => 0,    // target brightness = off
-                    ],
-                ],
-            ],
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
         ];
     }
 }

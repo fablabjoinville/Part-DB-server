@@ -47,7 +47,6 @@
         "omines/datatables-bundle": "^0.10.0",
         "part-db/label-fonts": "^1.0",
         "part-db/swap-bundle": "^6.0.0",
-        "php-mqtt/client": "^2.3",
         "phpoffice/phpspreadsheet": "^5.0.0",
         "rhukster/dom-sanitizer": "^1.0",
         "s9e/text-formatter": "^2.1",
