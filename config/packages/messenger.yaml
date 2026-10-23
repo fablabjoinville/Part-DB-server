@@ -11,9 +11,9 @@ framework:
                     multiplier: 2
 
             failed: 'doctrine://default?queue_name=failed'
-
         routing:
             'App\Message\WledHighlightMessage': async
+            'App\Message\WledRestoreMessage': async
 
 when@test:
     framework:
