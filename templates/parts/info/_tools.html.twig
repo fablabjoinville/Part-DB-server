@@ -77,6 +77,9 @@
 {% endfor %}
 {% if has_wled %}
 <form id="wled-highlight-form" class="mt-2"
+      data-turbo="false"
+      data-controller="wled-highlight"
+      data-action="submit->wled-highlight#form"
       action="{{ path('part_wled_highlight', {id: part.id}) }}"
       method="post">
     <input type="hidden" name="_token" value="{{ csrf_token('wled_highlight' ~ part.id) }}">
@@ -86,40 +89,6 @@
         {{ 'part.wled.highlight_btn'|trans }}
     </button>
 </form>
-<script>
-(function () {
-    var form = document.getElementById('wled-highlight-form');
-    var btn  = document.getElementById('wled-highlight-btn');
-    if (!form || !btn) return;
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-fw"></i>';
-        fetch(form.action, {method: 'POST', body: new FormData(form)})
-            .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-            .then(function (data) {
-                btn.classList.replace('btn-warning', data.dispatched > 0 ? 'btn-success' : 'btn-secondary');
-                btn.innerHTML = data.dispatched > 0
-                    ? '<i class="fa-solid fa-check fa-fw"></i>'
-                    : '<i class="fa-solid fa-ban fa-fw"></i>';
-                setTimeout(function () {
-                    btn.classList.replace(data.dispatched > 0 ? 'btn-success' : 'btn-secondary', 'btn-warning');
-                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> ' + btn.dataset.label;
-                    btn.disabled = false;
-                }, 2000);
-            })
-            .catch(function () {
-                btn.classList.replace('btn-warning', 'btn-danger');
-                btn.innerHTML = '<i class="fa-solid fa-xmark fa-fw"></i>';
-                setTimeout(function () {
-                    btn.classList.replace('btn-danger', 'btn-warning');
-                    btn.innerHTML = '<i class="fa-solid fa-lightbulb fa-fw"></i> ' + btn.dataset.label;
-                    btn.disabled = false;
-                }, 2000);
-            });
-    });
-}());
-</script>
 {% endif %}
 
 <a class="btn btn-success mt-2" {% if not is_granted('@projects.edit') %}disabled{% endif %}
