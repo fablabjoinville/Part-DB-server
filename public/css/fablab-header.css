@@ -1,0 +1,149 @@
+/* Header/navbar styles loaded directly for the FabLab preview. */
+#navbar.navbar {
+    --bs-navbar-color: rgba(255, 255, 255, .82);
+    --bs-navbar-hover-color: #ffffff;
+    --bs-navbar-active-color: #ffffff;
+    --bs-navbar-brand-color: #ffffff;
+    --bs-navbar-brand-hover-color: var(--flj-laser-500);
+    --bs-navbar-disabled-color: rgba(255, 255, 255, .4);
+    padding-block: .6rem;
+    background-color: var(--flj-navy-800);
+    border-bottom: 3px solid var(--flj-laser-500);
+    box-shadow: none;
+    color: #fff;
+}
+
+#navbar .navbar-brand {
+    display: flex;
+    align-items: center;
+    position: static;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding-left: .35rem;
+    margin-right: 1.5rem;
+    font-family: var(--flj-font-mono);
+    color: #fff;
+}
+
+#navbar .navbar-brand img {
+    display: block;
+    flex-shrink: 0;
+    width: auto;
+    height: 50px;
+    max-width: none;
+    padding-right: .75rem;
+    margin-right: .75rem;
+    border-right: 1px solid rgba(255, 255, 255, .25);
+    transform-origin: left center;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+#navbar .navbar-brand:hover img {
+    opacity: .85;
+    transform: scale(1.05);
+}
+
+#navbar .navbar-brand:focus-visible {
+    outline: 2px solid var(--flj-laser-500, #ff6a1a);
+    outline-offset: 3px;
+}
+
+#navbar .navbar-brand-title {
+    display: inline-block;
+    color: #fff;
+    font-size: .85em;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 767.98px) {
+    #navbar > .container-fluid {
+        flex-wrap: wrap;
+    }
+
+    #navbar .navbar-brand {
+        min-width: 0;
+    }
+
+    #navbar .navbar-collapse {
+        flex-basis: 100%;
+    }
+}
+
+#navbar .navbar-brand .fa,
+#navbar .navbar-brand .fas {
+    color: var(--flj-laser-500);
+}
+
+#navbar .nav-link {
+    color: rgba(255, 255, 255, .82);
+    font-family: var(--flj-font-mono);
+    font-size: .82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    transition: color .2s ease;
+}
+
+#navbar .nav-link:hover,
+#navbar .nav-link:focus {
+    color: var(--flj-laser-500);
+}
+
+#navbar .navbar-toggler {
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, .5);
+    border-radius: 0;
+}
+
+#navbar .form-control,
+#navbar .form-select {
+    background-color: rgba(255, 255, 255, .1);
+    border-color: rgba(255, 255, 255, .2);
+    color: #fff;
+}
+
+#navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, .75);
+}
+
+#navbar .form-control:focus {
+    border-color: var(--flj-laser-500);
+    box-shadow: 0 0 0 .2rem rgba(255, 106, 26, .25);
+}
+
+#navbar-search-form .btn {
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #navbar .navbar-brand img,
+    #navbar .nav-link,
+    #navbar-search-form .btn {
+        transition: none;
+    }
+}
+
+.card.border-primary .card-header h4 {
+    color: #fff;
+}
+
+#navbar .btn-outline-success,
+#navbar .btn-outline-secondary,
+#navbar .btn-outline-light {
+    color: #fff;
+    border-color: var(--flj-laser-500);
+    background: var(--flj-laser-500);
+}
+
+#navbar .btn-outline-success:hover,
+#navbar .btn-outline-secondary:hover,
+#navbar .btn-outline-light:hover {
+    background: var(--flj-laser-600);
+    border-color: var(--flj-laser-600);
+}
+
+#navbar .dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--flj-laser-500);
+}
