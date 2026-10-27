@@ -2,6 +2,8 @@
 {% import "vars.macro.twig" as vars %}
 {% import "components/search.macro.html.twig" as search %}
 
+<link rel="stylesheet" href="{{ asset('css/fablab-header.css') }}">
+
 <nav class="navbar navbar-expand-md bg-body-tertiary border-bottom shadow-sm fixed-top py-0" id="navbar">
     <div class="container-fluid">
         <div class="d-flex justify-content-start align-items-center">
@@ -10,15 +12,12 @@
                 <!-- <span class="navbar-toggler-icon"></span> -->
                 <i class="fas fa-folder-open fa-lg fa-fw"></i>
             </button>
-            {% if is_granted("@tools.label_scanner") %}
-                <a href="{{ path('scan_dialog') }}" class="navbar-toggler nav-link ms-3">
-                    <i class="fas fa-camera-retro fa-fw"></i>
-                </a>
-            {% endif %}
         </div>
+        <a class="navbar-brand d-flex align-items-center" href="{{ path('homepage') }}">
+            <img src="{{ asset('img/logo_fablab_branca.svg') }}" alt="Fab Lab Joinville">
+            <span class="navbar-brand-title">{{ vars.partdb_title() }}</span>
 
-        <a class="navbar-brand" href="{{ path('homepage') }}"><i class="fa fa-microchip"
-                                                                 aria-hidden="true"></i> {{ vars.partdb_title() }}</a>
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
                 aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +63,6 @@
                                     {% if is_granted("@tools.label_scanner") %}
                                         <li>
                                             <a class="dropdown-item" href="{{ path('scan_dialog') }}">
-                                                <i class="fa-fw fa-solid fa-camera-retro"></i>
                                                 {% trans %}parts.create_from_scan.title{% endtrans %}
                                             </a>
                                         </li>

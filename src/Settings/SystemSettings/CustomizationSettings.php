@@ -54,7 +54,7 @@ class CustomizationSettings
         formType: ThemeChoiceType::class, formOptions: ['placeholder' => false]
     )]
     #[ValidTheme]
-    public string $theme = 'bootstrap';
+    public string $theme = 'fablab';
 
     #[SettingsParameter(
         label: new TM("settings.system.customization.banner"),
