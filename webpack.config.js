@@ -142,7 +142,7 @@ Encore
 ;
 
 //These are all the themes that are available in bootswatch
-const AVAILABLE_THEMES = ['bootstrap', 'cerulean', 'cosmo', 'cyborg', 'darkly', 'flatly', 'journal',
+const AVAILABLE_THEMES = ['fablab', 'bootstrap', 'cerulean', 'cosmo', 'cyborg', 'darkly', 'flatly', 'journal',
     'litera', 'lumen', 'lux', 'materia', 'minty', 'morph', 'pulse', 'quartz', 'sandstone', 'simplex', 'sketchy', 'slate', 'solar',
     'spacelab', 'superhero', 'united', 'vapor', 'yeti', 'zephyr'];
 

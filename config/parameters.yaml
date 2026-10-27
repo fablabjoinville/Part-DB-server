@@ -52,6 +52,7 @@ parameters:
   # Set the themes from which the user can choose from in the settings.
   # Themes commented here by default, are not really usable, because of display problems. Enable them at your own risk!
   partdb.available_themes:
+    - fablab        # Identidade visual do Fab Lab Joinville
     - bootstrap
     - cerulean
     - cosmo

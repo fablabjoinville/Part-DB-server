@@ -15,9 +15,8 @@
     <meta name="application-name" content="Part-DB">
     <meta name="apple-mobile-web-app-title" content="Part-DB">
     <meta name="msapplication-config" content="{{ asset('icon/browserconfig.xml') }}">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="msapplication-navbutton-color" content="#ffffff">
+    <meta name="theme-color" content="#082c3b">
+    <meta name="msapplication-navbutton-color" content="#082c3b">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="msapplication-starturl" content="/en/">
 
@@ -52,6 +51,12 @@
         {% endif %}
 
         {% if theme and theme in available_themes and encore_entry_exists('theme_' ~ theme) %}
+            {% if theme == 'fablab' %}
+                {# Fontes do Fab Lab Joinville (com fallback para fontes do sistema se estiver offline) #}
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700;800&display=swap">
+            {% endif %}
             {{ encore_entry_link_tags('theme_' ~ theme) }}
         {% else %}
             {{ encore_entry_link_tags('theme_bootstrap') }}
